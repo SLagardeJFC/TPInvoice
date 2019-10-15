@@ -44,7 +44,9 @@ public class DAO {
 		}
 		return result;
 	}
-
+        
+        
+        
 	/**
 	 * Renvoie le nom d'un client à partir de son ID
 	 *
