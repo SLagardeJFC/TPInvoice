@@ -78,9 +78,35 @@ public class DAO {
 	 * taille
 	 * @throws java.lang.Exception si la transaction a échoué
 	 */
-	public void createInvoice(CustomerEntity customer, int[] productIDs, int[] quantities)
-		throws Exception {
-		throw new UnsupportedOperationException("Pas encore implémenté");
+	public void createInvoice(CustomerEntity customer, int[] productIDs, int[] quantities) throws SQLException{
+                String sql = "INSERT INTO INVOICE(CustomerID) VALUES(?)";
+                String sql2 = "INSERT INTO ITEM (InvoiceID,Item,ProductID,Quantity,Cost) VALUES (?,?,?,?,?)";
+                String sql3 = "SELECT Price FROM PRODUCT WHERE ID=?";
+		/*throws Exception {
+		throw new UnsupportedOperationException("Pas encore implémenté");*/
+                try (Connection connection = myDataSource.getConnection();
+			PreparedStatement stmt = connection.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);
+                        PreparedStatement stmt2 = connection.prepareStatement(sql2,Statement.RETURN_GENERATED_KEYS);
+                        PreparedStatement stmt3 = connection.prepareStatement(sql3);)
+                {
+                        stmt.setInt(1,customer.getCustomerId());
+                        stmt.executeUpdate();
+                        ResultSet invoiceID = stmt.getGeneratedKeys();
+                        invoiceID.next();
+                        for(int i=0;i<productIDs.length;i++){
+                            stmt3.setInt(1, productIDs[i]);
+                            ResultSet rs = stmt3.executeQuery();
+                            if (rs.next()){
+                                float prix=rs.getFloat("Price");
+                                stmt2.setInt(1, invoiceID.getInt(1));
+                                stmt2.setInt(2, i);
+                                stmt2.setInt(3, productIDs[i]);
+                                stmt2.setInt(4, quantities[i]);
+                                stmt2.setFloat(5, prix*quantities[i]);
+                                stmt2.executeUpdate();
+                            }
+                        }
+                }
 	}
 
 	/**
